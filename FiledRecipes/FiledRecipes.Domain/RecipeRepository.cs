@@ -127,5 +127,36 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
+
+        /// <summary>
+        /// Implementera metoden Load()
+        /// </summary>
+        public void Load()
+        {
+            List<Recipe> recipe = new List<Recipe>(); //Skapa lista som innehåller referenser till receptobjektet
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(_path))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        Console.WriteLine(line); //OBS! Det ska inte stå Console.WriteLine()
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("FEL!!!");
+                //throw;
+            }
+        }
+
+        //Implementera metoden Save()
+        public void Save()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
