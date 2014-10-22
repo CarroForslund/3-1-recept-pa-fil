@@ -133,23 +133,72 @@ namespace FiledRecipes.Domain
         /// </summary>
         public void Load()
         {
-            List<Recipe> recipe = new List<Recipe>(); //Skapa lista som innehåller referenser till receptobjektet
-
+            List<IRecipe> recipes = new List<IRecipe>(); //Skapa lista som innehåller referenser till receptobjektet
+            RecipeReadStatus status = RecipeReadStatus.Indefinite; //Läs av statusen för nästa rad
+            
             try
             {
                 using (StreamReader reader = new StreamReader(_path))
                 {
                     string line;
+
                     while ((line = reader.ReadLine()) != null)
                     {
-                        Console.WriteLine(line); //OBS! Det ska inte stå Console.WriteLine()
+                        if (!string.IsNullOrWhiteSpace(line))
+                        {
+                            if (line == SectionRecipe)
+                            {
+                                status = RecipeReadStatus.New; //status är enum. RecipeReadStatus.New innehåller recept-namnet
+                            }
+                            else if (line == SectionIngredients)
+                            {
+                                status = RecipeReadStatus.Ingredient;
+                            }
+                            else if (line == SectionInstructions)
+                            {
+                                status = RecipeReadStatus.Instruction;
+                            }
+                            else
+                            {
+                                if (status == RecipeReadStatus.New)
+                                {
+                                    Recipe recipe = new Recipe(line);
+                                }
+                                else if (status == RecipeReadStatus.Ingredient)
+                                {
+                                    string[] values = line.Split(new char[] {';'});
+
+                                    if (values.Length != 3)
+                                    {
+                                        throw new FileFormatException();
+                                    }
+
+                                    //Instansiera ett ingrediensobjekt
+                                    //Initiera mängd, mått och namn
+                                    Ingredient ingredient = new Ingredient();
+                                    ingredient.Amount = values[0];
+                                    ingredient.Measure = values[1];
+                                    ingredient.Name = values[2];
+
+                                    //recipes.AddRange(ingredient);
+
+                                }
+                                else if (status == RecipeReadStatus.Instruction)
+                                {
+                                    
+                                }
+                                else
+                                {
+                                    throw new FileFormatException();
+                                }
+                            }
+                        }
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Console.WriteLine("FEL!!!");
-                //throw;
+                Console.WriteLine(ex.Message);
             }
         }
 
