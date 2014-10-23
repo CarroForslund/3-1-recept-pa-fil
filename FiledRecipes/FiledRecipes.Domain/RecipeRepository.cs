@@ -197,7 +197,7 @@ namespace FiledRecipes.Domain
                             }
                             //Sortera listan med recept baserat på namn
                             //recipes.Sort();
-                            recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
+                            //recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
 
                             //Tilldela avsett fält i klassen, _recipes, en referens till listan
 
