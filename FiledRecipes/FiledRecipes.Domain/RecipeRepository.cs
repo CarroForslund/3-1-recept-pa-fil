@@ -134,7 +134,8 @@ namespace FiledRecipes.Domain
         public void Load()
         {
             List<IRecipe> recipes = new List<IRecipe>(); //Skapa lista som innehåller referenser till receptobjektet
-            RecipeReadStatus status = RecipeReadStatus.Indefinite; //Läs av statusen för nästa rad
+            RecipeReadStatus status = RecipeReadStatus.Indefinite; //Läs av statusen för nästkommande rad
+            Recipe recipe = null; //Ge den lokala variabeln ett värde
             
             try
             {
@@ -162,7 +163,8 @@ namespace FiledRecipes.Domain
                             {
                                 if (status == RecipeReadStatus.New)
                                 {
-                                    Recipe recipe = new Recipe(line);
+                                    recipe = new Recipe(line);
+                                    //skulle ha kunnat skriva recipes.Add(new Recipe(line) för att slippa lägga till variabeln recipe
                                 }
                                 else if (status == RecipeReadStatus.Ingredient)
                                 {
@@ -180,18 +182,30 @@ namespace FiledRecipes.Domain
                                     ingredient.Measure = values[1];
                                     ingredient.Name = values[2];
 
-                                    //recipes.AddRange(ingredient);
+                                    //Lägg till ingrediensen till receptets lista med ingredienser
+                                    recipe.Add(ingredient);
 
                                 }
                                 else if (status == RecipeReadStatus.Instruction)
                                 {
-                                    
+                                    recipe.Add(line);
                                 }
                                 else
                                 {
                                     throw new FileFormatException();
                                 }
                             }
+                            //Sortera listan med recept baserat på namn
+                            //recipes.Sort();
+                            recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
+
+                            //Tilldela avsett fält i klassen, _recipes, en referens till listan
+
+                            //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
+                            //att listan med ercept är oförändrad
+
+                            //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
+                            //och skicka med parametern EventArgs.Empty
                         }
                     }
                 }
