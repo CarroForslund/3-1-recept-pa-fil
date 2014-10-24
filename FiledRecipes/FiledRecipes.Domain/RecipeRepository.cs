@@ -165,6 +165,10 @@ namespace FiledRecipes.Domain
                             {
                                 if (status == RecipeReadStatus.New)
                                 {
+                                    if (recipe != null)
+                                    {
+                                        recipes.Add(recipe);
+                                    }
                                     recipe = new Recipe(line);
                                     //skulle ha kunnat skriva recipes.Add(new Recipe(line) för att slippa lägga till variabeln recipe
                                 }
@@ -174,7 +178,7 @@ namespace FiledRecipes.Domain
 
                                     if (values.Length != 3)
                                     {
-                                        throw new FileFormatException("FEL 1!");
+                                        throw new FileFormatException("Fel!");
                                     }
 
                                     //Instansiera ett ingrediensobjekt
@@ -194,7 +198,7 @@ namespace FiledRecipes.Domain
                                 }
                                 else
                                 {
-                                    throw new FileFormatException("FEl 2");
+                                    throw new FileFormatException("Fel!");
                                 }
                             }
                         }
@@ -202,9 +206,8 @@ namespace FiledRecipes.Domain
                     recipes.Add(recipe);
                 }
                 recipes.TrimExcess();
+
                 //Sortera listan med recept baserat på namn
-                //recipes.Sort();
-                //recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
                 IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
 
                 //Tilldela avsett fält i klassen, _recipes, en referens till listan
@@ -225,9 +228,20 @@ namespace FiledRecipes.Domain
         }
 
         //Implementera metoden Save()
+        //http://msdn.microsoft.com/en-us/library/8bh11f1k.aspx
         public void Save()
         {
-            
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(_path))
+                {
+                    writer.WriteLine(_recipes); 
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }
