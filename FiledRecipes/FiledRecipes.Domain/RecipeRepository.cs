@@ -139,10 +139,12 @@ namespace FiledRecipes.Domain
             
             try
             {
+                //Öppnar textfilen och stänger den sen när blocket är avslutat
                 using (StreamReader reader = new StreamReader(_path))
                 {
                     string line;
 
+                    //Läs in rad från textfil tills filen är slut (EOF = null)
                     while ((line = reader.ReadLine()) != null)
                     {
                         if (!string.IsNullOrWhiteSpace(line))
@@ -172,7 +174,7 @@ namespace FiledRecipes.Domain
 
                                     if (values.Length != 3)
                                     {
-                                        throw new FileFormatException();
+                                        throw new FileFormatException("FEL 1!");
                                     }
 
                                     //Instansiera ett ingrediensobjekt
@@ -192,26 +194,29 @@ namespace FiledRecipes.Domain
                                 }
                                 else
                                 {
-                                    throw new FileFormatException();
+                                    throw new FileFormatException("FEl 2");
                                 }
                             }
-                            //Sortera listan med recept baserat på namn
-                            //recipes.Sort();
-                            //recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
-                            IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
-
-                            //Tilldela avsett fält i klassen, _recipes, en referens till listan
-                            _recipes = new List<IRecipe>
-
-                            //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
-                            //att listan med recept är oförändrad
-                            IsModified = 
-
-                            //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
-                            //och skicka med parametern EventArgs.Empty
                         }
                     }
+                    recipes.Add(recipe);
                 }
+                recipes.TrimExcess();
+                //Sortera listan med recept baserat på namn
+                //recipes.Sort();
+                //recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
+                IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
+
+                //Tilldela avsett fält i klassen, _recipes, en referens till listan
+                _recipes = new List<IRecipe>(sortedRecipes);
+
+                //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
+                //att listan med recept är oförändrad
+                IsModified = false;
+
+                //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
+                //och skicka med parametern EventArgs.Empty
+                OnRecipesChanged(EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -222,7 +227,7 @@ namespace FiledRecipes.Domain
         //Implementera metoden Save()
         public void Save()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }
