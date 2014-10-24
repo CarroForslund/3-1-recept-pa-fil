@@ -198,11 +198,14 @@ namespace FiledRecipes.Domain
                             //Sortera listan med recept baserat på namn
                             //recipes.Sort();
                             //recipes.OrderBy<RecipeReadStatus>(); //http://msdn.microsoft.com/en-us/library/bb534966.aspx
+                            IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
 
                             //Tilldela avsett fält i klassen, _recipes, en referens till listan
+                            _recipes = new List<IRecipe>
 
                             //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
-                            //att listan med ercept är oförändrad
+                            //att listan med recept är oförändrad
+                            IsModified = 
 
                             //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
                             //och skicka med parametern EventArgs.Empty

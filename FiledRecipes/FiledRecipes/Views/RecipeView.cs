@@ -14,12 +14,12 @@ namespace FiledRecipes.Views
     {
         public void Show (IEnumerable<IRecipe> recipes)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void Show(IRecipe recipe)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }
