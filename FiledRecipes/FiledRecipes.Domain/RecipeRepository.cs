@@ -235,7 +235,7 @@ namespace FiledRecipes.Domain
             {
                 using (StreamWriter writer = new StreamWriter(_path))
                 {
-                    writer.WriteLine(_recipes); 
+                    writer.WriteLine(_recipes);
                 }
             }
             catch (Exception ex)
