@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FiledRecipes.Domain
 {
@@ -228,14 +229,27 @@ namespace FiledRecipes.Domain
         }
 
         //Implementera metoden Save()
-        //http://msdn.microsoft.com/en-us/library/8bh11f1k.aspx
         public void Save()
         {
             try
             {
-                using (StreamWriter writer = new StreamWriter(_path))
+                using (StreamWriter writer = new StreamWriter(_path, false, Encoding.UTF8))
                 {
-                    writer.WriteLine(_recipes);
+                    foreach (Recipe recipe in _recipes)
+                    {
+                        writer.WriteLine(SectionRecipe);
+                        writer.WriteLine(recipe.Name);
+                        writer.WriteLine(SectionIngredients);
+                        foreach (Ingredient ingredient in recipe.Ingredients)
+                        {
+                            writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
+                        }
+                        writer.WriteLine(SectionInstructions);
+                        foreach (var instruction in recipe.Instructions)
+                        {
+                            writer.WriteLine(instruction);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
