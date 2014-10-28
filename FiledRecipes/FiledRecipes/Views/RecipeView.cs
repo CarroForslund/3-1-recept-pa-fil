@@ -12,15 +12,6 @@ namespace FiledRecipes.Views
     /// </summary>
     public class RecipeView : ViewBase, IRecipeView
     {
-        public void Show (IEnumerable<IRecipe> recipes)
-        {
-            foreach (var recipe in recipes)
-            {
-                Show(recipe);
-                ContinueOnKeyPressed();
-            }
-        } 
-
         public void Show(IRecipe recipe)
         {
             Console.Clear();
@@ -46,5 +37,16 @@ namespace FiledRecipes.Views
                 Console.WriteLine("{0}\n", instruction);            
             }
         }
+
+        public void Show(IEnumerable<IRecipe> recipes)
+        {
+            //Skriv ut alla recept. Ta hjälp av den tidigare metoden i denna klass
+            //Tryck ner en tangent för att visa nästa recept
+            foreach (var recipe in recipes)
+            {
+                Show(recipe);
+                ContinueOnKeyPressed();
+            }
+        } 
     }
 }

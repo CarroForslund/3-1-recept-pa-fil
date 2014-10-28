@@ -138,123 +138,113 @@ namespace FiledRecipes.Domain
             RecipeReadStatus status = RecipeReadStatus.Indefinite; //Läs av statusen för nästkommande rad
             Recipe recipe = null; //Ge den lokala variabeln ett värde
             
-            try
+            //Öppnar textfilen och stänger den sen när blocket är avslutat
+            using (StreamReader reader = new StreamReader(_path))
             {
-                //Öppnar textfilen och stänger den sen när blocket är avslutat
-                using (StreamReader reader = new StreamReader(_path))
+                string line;
+
+                //Läs in rad från textfil tills filen är slut (EOF = null)
+                while ((line = reader.ReadLine()) != null)
                 {
-                    string line;
-
-                    //Läs in rad från textfil tills filen är slut (EOF = null)
-                    while ((line = reader.ReadLine()) != null)
+                    if (!string.IsNullOrWhiteSpace(line))
                     {
-                        if (!string.IsNullOrWhiteSpace(line))
+                        if (line == SectionRecipe)
                         {
-                            if (line == SectionRecipe)
+                            status = RecipeReadStatus.New; //status är enum. RecipeReadStatus.New innehåller recept-namnet
+                        }
+                        else if (line == SectionIngredients)
+                        {
+                            status = RecipeReadStatus.Ingredient;
+                        }
+                        else if (line == SectionInstructions)
+                        {
+                            status = RecipeReadStatus.Instruction;
+                        }
+                        else
+                        {
+                            if (status == RecipeReadStatus.New)
                             {
-                                status = RecipeReadStatus.New; //status är enum. RecipeReadStatus.New innehåller recept-namnet
+                                //if (recipe != null)
+                                //{
+                                //    recipes.Add(recipe);
+                                //}
+                                recipe = new Recipe(line);
+                                recipes.Add(recipe);
+                                //skulle ha kunnat skriva recipes.Add(new Recipe(line) för att slippa lägga till variabeln recipe
                             }
-                            else if (line == SectionIngredients)
+                            else if (status == RecipeReadStatus.Ingredient)
                             {
-                                status = RecipeReadStatus.Ingredient;
-                            }
-                            else if (line == SectionInstructions)
-                            {
-                                status = RecipeReadStatus.Instruction;
-                            }
-                            else
-                            {
-                                if (status == RecipeReadStatus.New)
-                                {
-                                    if (recipe != null)
-                                    {
-                                        recipes.Add(recipe);
-                                    }
-                                    recipe = new Recipe(line);
-                                    //skulle ha kunnat skriva recipes.Add(new Recipe(line) för att slippa lägga till variabeln recipe
-                                }
-                                else if (status == RecipeReadStatus.Ingredient)
-                                {
-                                    string[] values = line.Split(new char[] {';'});
+                                string[] values = line.Split(new char[] {';'});
 
-                                    if (values.Length != 3)
-                                    {
-                                        throw new FileFormatException("Fel!");
-                                    }
-
-                                    //Instansiera ett ingrediensobjekt
-                                    //Initiera mängd, mått och namn
-                                    Ingredient ingredient = new Ingredient();
-                                    ingredient.Amount = values[0];
-                                    ingredient.Measure = values[1];
-                                    ingredient.Name = values[2];
-
-                                    //Lägg till ingrediensen till receptets lista med ingredienser
-                                    recipe.Add(ingredient);
-
-                                }
-                                else if (status == RecipeReadStatus.Instruction)
-                                {
-                                    recipe.Add(line);
-                                }
-                                else
+                                if (values.Length != 3)
                                 {
                                     throw new FileFormatException("Fel!");
                                 }
+
+                                //Instansiera ett ingrediensobjekt
+                                //Initiera mängd, mått och namn
+                                Ingredient ingredient = new Ingredient();
+                                ingredient.Amount = values[0];
+                                ingredient.Measure = values[1];
+                                ingredient.Name = values[2];
+
+                                //Lägg till ingrediensen till receptets lista med ingredienser
+                                recipe.Add(ingredient);
+
+                            }
+                            else if (status == RecipeReadStatus.Instruction)
+                            {
+                                recipe.Add(line);
+                            }
+                            else
+                            {
+                                throw new FileFormatException("Fel!");
                             }
                         }
                     }
-                    recipes.Add(recipe);
                 }
-                recipes.TrimExcess();
-
-                //Sortera listan med recept baserat på namn
-                IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
-
-                //Tilldela avsett fält i klassen, _recipes, en referens till listan
-                _recipes = new List<IRecipe>(sortedRecipes);
-
-                //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
-                //att listan med recept är oförändrad
-                IsModified = false;
-
-                //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
-                //och skicka med parametern EventArgs.Empty
-                OnRecipesChanged(EventArgs.Empty);
+                //recipes.Add(recipe); //Lägg till recept till listan
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            recipes.TrimExcess(); //Ta bort tomma rader
+
+            //Sortera listan med recept baserat på namn
+            IEnumerable<IRecipe> sortedRecipes = recipes.OrderBy(ReadRecipeStatus => ReadRecipeStatus.Name);
+
+            //Tilldela avsett fält i klassen, _recipes, en referens till listan
+            _recipes = new List<IRecipe>(sortedRecipes);
+
+            //Tilldela avsedd egenskap i klassen, IsModified, ett värde som indikerar
+            //att listan med recept är oförändrad
+            IsModified = false;
+
+            //Utlös händelse om att recept har lästs in genom att anropa metoden OnRecipeChanged
+            //och skicka med parametern EventArgs.Empty
+            OnRecipesChanged(EventArgs.Empty);
         }
 
         //Implementera metoden Save()
         public void Save()
         {
-            try
+            //Öppna filen och stäng när den använts klart
+            //Skriv ut alla recept i listan med en foreach-loop
+            //Namn, ingredienser och instruktioner
+            using (StreamWriter writer = new StreamWriter(_path, false, Encoding.UTF8))
             {
-                using (StreamWriter writer = new StreamWriter(_path, false, Encoding.UTF8))
+                foreach (Recipe recipe in _recipes)
                 {
-                    foreach (Recipe recipe in _recipes)
+                    writer.WriteLine(SectionRecipe);
+                    writer.WriteLine(recipe.Name);
+                    writer.WriteLine(SectionIngredients);
+                    foreach (Ingredient ingredient in recipe.Ingredients)
                     {
-                        writer.WriteLine(SectionRecipe);
-                        writer.WriteLine(recipe.Name);
-                        writer.WriteLine(SectionIngredients);
-                        foreach (Ingredient ingredient in recipe.Ingredients)
-                        {
-                            writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
-                        }
-                        writer.WriteLine(SectionInstructions);
-                        foreach (var instruction in recipe.Instructions)
-                        {
-                            writer.WriteLine(instruction);
-                        }
+                        writer.WriteLine("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name);
+                    }
+                    writer.WriteLine(SectionInstructions);
+                    foreach (var instruction in recipe.Instructions)
+                    {
+                        writer.WriteLine(instruction);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
             }
         }
     }
